@@ -41,4 +41,5 @@ terraform.rc
 
 .aws/
 
+*.pem
 .DS_STORE

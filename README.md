@@ -2,8 +2,11 @@
 
 1. 建立 ec2
     * terraform 狀態存放至 s3
-    * security group 開放 ssh 權限
-    * 上傳 ssh key
+        * 利用 workspace 切換環境
+    * 建立一組 vpc
+    * 建立 ec2
+        * 建立 ssh key
+        * security group 開放 ssh 權限
 2. ec2 環境配置
     * 初始化 docker
     * harbor 連線設定
