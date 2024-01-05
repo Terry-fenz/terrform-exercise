@@ -8,6 +8,7 @@
         * 建立 ssh key
         * security group 開放 ssh 權限
 2. ec2 環境配置
+    * ec2 配置模組化
     * 初始化 docker
     * harbor 連線設定
 3. 建立 redshift
