@@ -82,6 +82,7 @@ resource "local_file" "ssh_key" {
 }
 
 # 取得 ec2 使用映象檔
+# 查詢指令：aws ec2 describe-images --region ap-southeast-1 --filters "Name=name, Values=al2023-ami-2023*x86_64*" |grep \"Name
 data "aws_ami" "amazon_linux_2023_ami" {
   most_recent = true
 
@@ -92,7 +93,7 @@ data "aws_ami" "amazon_linux_2023_ami" {
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-ebs"]
+    values = ["al2023-ami-2023*x86_64*"]
   }
 }
 
