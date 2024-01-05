@@ -16,9 +16,5 @@ resource "aws_key_pair" "ssh_key" {
 resource "local_file" "ssh_key" {
   content  = tls_private_key.pk.private_key_pem
   filename = var.filename
-
-  # 檔案新增後，修改權限
-  provisioner "local-exec" {
-    command = "chmod 400 ${var.filename}"
-  }
+  file_permission = "0400"
 }
