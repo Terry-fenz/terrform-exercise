@@ -103,7 +103,7 @@ resource "aws_instance" "data_center_ec2" {
   ami           = data.aws_ami.amazon_linux_2023_ami.id
   key_name      = aws_key_pair.ssh_key.key_name
 
-  security_groups             = ["${aws_security_group.data_center_ec2.id}"]
+  vpc_security_group_ids      = ["${aws_security_group.data_center_ec2.id}"] # 請使用 vpc_security_group_ids，而不是 security_group，否則會每次執行時都重建 aws_instance
   associate_public_ip_address = true # 開放公開 DNS，用於 ssh 連線
 
   subnet_id = module.vpc.public_subnets[0] # subnet 需配置 vpc 的 public subnet，才可從公開 DNS 連線
