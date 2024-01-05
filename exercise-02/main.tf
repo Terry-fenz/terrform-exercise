@@ -56,30 +56,16 @@ module "vpc" {
   tags = local.tags
 }
 
-# 產生 ssh key 工具
-resource "tls_private_key" "pk" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
+# # 至 aws 註冊新的 ssh key
+module "ssh_key" {
+  source = "./modules/ssh-key"
 
-# 至 aws 註冊新的 ssh key
-resource "aws_key_pair" "ssh_key" {
-  key_name   = "${local.name}-ssh-key"
-  public_key = tls_private_key.pk.public_key_openssh
+  key_name = "${local.name}-ssh-key"
+  filename = "./ssh_key.pem"
 
   tags = local.tags
 }
 
-# ssh_key 在本地 pem 檔案
-resource "local_file" "ssh_key" {
-  content  = tls_private_key.pk.private_key_pem
-  filename = "ssh_key.pem"
-
-  # 檔案新增後，修改權限
-  provisioner "local-exec" {
-    command = "chmod 400 ssh_key.pem"
-  }
-}
 
 # 取得 ec2 使用映象檔
 # 查詢指令：aws ec2 describe-images --region ap-southeast-1 --filters "Name=name, Values=al2023-ami-2023*x86_64*" |grep \"Name
@@ -101,10 +87,10 @@ data "aws_ami" "amazon_linux_2023_ami" {
 resource "aws_instance" "data_center_ec2" {
   instance_type = var.instance_type
   ami           = data.aws_ami.amazon_linux_2023_ami.id
-  key_name      = aws_key_pair.ssh_key.key_name
+  key_name      = module.ssh_key.key_name
 
   vpc_security_group_ids      = ["${aws_security_group.data_center_ec2.id}"] # 請使用 vpc_security_group_ids，而不是 security_group，否則會每次執行時都重建 aws_instance
-  associate_public_ip_address = true # 開放公開 DNS，用於 ssh 連線
+  associate_public_ip_address = true                                         # 開放公開 DNS，用於 ssh 連線
 
   subnet_id = module.vpc.public_subnets[0] # subnet 需配置 vpc 的 public subnet，才可從公開 DNS 連線
 
