@@ -12,7 +12,7 @@ terraform {
 # provider
 provider "aws" {
   region                   = var.region
-  shared_credentials_files = ["./../.aws/credentials"]
+  shared_credentials_files = ["./../.aws/credentials"] # aws 認證設定，預設應為 ~/.aws/credentials
   profile                  = "default"
 }
 
@@ -36,6 +36,7 @@ locals {
 data "aws_availability_zones" "available" {} # AWS 可用區域
 
 # 建立一個 vpc
+# 假如要使用現有 vpc，後續步驟請用 vpc_id 指定，或使用 resource 取代
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
@@ -57,6 +58,10 @@ module "vpc" {
 }
 
 # 至 aws 註冊新的 ssh key
+# 假如要使用現有 ssh key，後續步驟請用 key_name 指定，或使用 resource 取代
+# 參考指令：
+#   ssh 連線: ssh -i ssh_key.pem ec2-user@$ec2_public_dns
+#   初始化 log: cat /var/log/cloud-init-output.log
 module "ssh_key" {
   source = "./modules/ssh-key"
 
