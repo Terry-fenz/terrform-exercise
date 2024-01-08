@@ -8,9 +8,10 @@ sudo systemctl enable docker
 sudo systemctl status docker
 
 # 調整 docker 權限
+sudo mkdir -p "$HOME/.docker"
+sudo chmod g+rwx "$HOME/.docker" -R
 sudo usermod -aG docker ec2-user
 newgrp docker
-sudo chmod g+rwx "$HOME/.docker" -R
 docker --version
 
 # 安裝 docker-compose
