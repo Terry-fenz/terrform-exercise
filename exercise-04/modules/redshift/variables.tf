@@ -49,6 +49,12 @@ variable "master_password" {
   sensitive   = true # 敏感資訊
 }
 
+# 存放 redshift 的 log s3 bucket   
+variable "s3_bucket_id" {
+  description = "S3 bucket for save redshift log"
+  type        = string
+}
+
 # 開放連線的 cidr block
 variable "connect_cidr" {
   type        = string

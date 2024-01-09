@@ -1,26 +1,10 @@
-# 建立 s3 儲存貯體，用於放置 redshift log
-module "redshift_log_s3_bucket" {
-  source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "~> 3.1"
-
-  bucket_prefix = "${var.name}-log-"
-
-  attach_deny_insecure_transport_policy = false
-  server_side_encryption_configuration = {
-    rule = {
-      apply_server_side_encryption_by_default = {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-
-  force_destroy = true
-
-  tags = var.tags
+# 取得 s3 儲存貯體，用於放置 redshift log
+data "aws_s3_bucket" "redshift_log_s3_bucket" {
+  bucket = var.s3_bucket_id
 }
 
 # 建立 iam policy，使 redshift 有權讀寫 s3
-data "aws_iam_policy_document" "redshift-access-bucket-assume-policy" {
+data "aws_iam_policy_document" "redshift_access_bucket_assume_policy" {
   statement {
     effect = "Allow"
     principals {
@@ -38,16 +22,16 @@ data "aws_iam_policy_document" "redshift-access-bucket-assume-policy" {
 
     # 指定 s3 儲存貯體及底下範圍
     resources = [
-      module.redshift_log_s3_bucket.s3_bucket_arn,
-      "${module.redshift_log_s3_bucket.s3_bucket_arn}/*",
+      data.aws_s3_bucket.redshift_log_s3_bucket.arn,
+      "${data.aws_s3_bucket.redshift_log_s3_bucket.arn}/*",
     ]
   }
 }
 
 # 綁定 s3 儲存貯體與 iam policy
 resource "aws_s3_bucket_policy" "dms_s3_bucket_redshift_log_policy" {
-  bucket = module.redshift_log_s3_bucket.s3_bucket_id
-  policy = data.aws_iam_policy_document.redshift-access-bucket-assume-policy.json
+  bucket = data.aws_s3_bucket.redshift_log_s3_bucket.id
+  policy = data.aws_iam_policy_document.redshift_access_bucket_assume_policy.json
 }
 
 # 建立 redshift 專用安全群組
@@ -85,7 +69,7 @@ module "redshift" {
   master_password        = var.master_password
 
   # 加密設定
-  encrypted   = true
+  encrypted = true
 
   # 網路與安全性設定
   enhanced_vpc_routing   = true
@@ -98,7 +82,8 @@ module "redshift" {
   # log 設定
   logging = {
     enable        = true
-    bucket_name   = module.redshift_log_s3_bucket.s3_bucket_id
+    bucket_name   = data.aws_s3_bucket.redshift_log_s3_bucket.id
+    s3_key_prefix = "redshift/"
   }
 
   # Parameter group
@@ -169,6 +154,28 @@ module "redshift" {
       }
     }
   }
+
+  tags = var.tags
+}
+
+# 使用 secrets manager 儲存 redshift 連線資訊
+module "secrets_manager_secrets_manager" {
+  source  = "terraform-aws-modules/secrets-manager/aws"
+  version = "~> 1.0"
+
+  name_prefix = "${var.name}-redshift-"
+  description = "Redshift secret for ${var.name}"
+
+  # Secret
+  recovery_window_in_days = 0
+  secret_string = jsonencode(
+    {
+      host     = module.redshift.cluster_endpoint
+      port     = 5439
+      username = var.master_username
+      password = var.master_password
+    }
+  )
 
   tags = var.tags
 }

@@ -93,6 +93,26 @@ module "ec2" {
   tags = local.tags
 }
 
+# 建立 s3 儲存貯體，用於放置 redshift、DMS 資訊
+module "s3_bucket" {
+  source  = "terraform-aws-modules/s3-bucket/aws"
+  version = "~> 3.1"
+
+  bucket_prefix = "${local.name}-"
+
+  attach_deny_insecure_transport_policy = false
+  server_side_encryption_configuration = {
+    rule = {
+      apply_server_side_encryption_by_default = {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
+
+  force_destroy = true
+
+  tags = local.tags
+}
 
 # 建立 redshift
 # jdbc 連線字串: jdbc:redshift://${redshift_cluster_endpoint}/dev
@@ -112,4 +132,7 @@ module "redshift" {
   database_name   = var.redshift_database_name
   master_username = var.redshift_master_username
   master_password = var.redshift_master_password
+
+  # log 存放設定
+  s3_bucket_id = module.s3_bucket.s3_bucket_id
 }
