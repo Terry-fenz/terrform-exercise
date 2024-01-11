@@ -49,22 +49,15 @@ variable "master_password" {
   sensitive   = true # 敏感資訊
 }
 
-# 存放 redshift 的 log s3 bucket   
-variable "s3_bucket_id" {
-  description = "S3 bucket for save redshift log"
-  type        = string
-}
-
 # 開放連線的 cidr block
 variable "connect_cidr" {
   type        = string
-  default     = "0.0.0.0/0"
   description = "cidr block for connect redshift"
 }
 
 # Redshift tags
 variable "tags" {
-  description = "EC2 tags"
+  description = "Redshift tags"
   type        = map(string)
   default     = {}
 }

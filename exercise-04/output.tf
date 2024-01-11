@@ -17,3 +17,9 @@ output "redshift_cluster_endpoint" {
   description = "redshift cluster endpoint"
   value       = module.redshift.cluster_endpoint
 }
+
+# DMS 覆寫個體的 的 id
+output "dms_replication_instance_public_ips" {
+  description = "DMS replication instance public ips"
+  value       = module.dms.replication_instance_public_ips
+}

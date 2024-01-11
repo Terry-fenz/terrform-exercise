@@ -56,3 +56,18 @@ variable "redshift_master_password" {
   default     = "Awsuser111Awsuser111Awsuser111!"
   sensitive   = true # 敏感資訊
 }
+
+# DMS 複寫執行個體類別
+variable "dms_repl_instance_class" {
+  description = "Replication instance class for DMS"
+  type        = string
+  default     = "dms.t3.large"
+}
+
+# DMS 資料來源(mysql)資訊的 secret arn
+variable "dms_mysql_secret_arn" {
+  description = "Secret arn for dms mysql source"
+  type        = string
+  default     = "arn:aws:secretsmanager:ap-southeast-1:380713445581:secret:data-center-mysql-source-example-yZnstp" # test case
+  sensitive   = true # 敏感資訊
+}

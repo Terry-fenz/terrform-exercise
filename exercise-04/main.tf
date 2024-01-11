@@ -41,9 +41,11 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
 
+  # 基本設定
   name = "${local.name}-vpc"
   cidr = local.vpc_cidr
 
+  # 網路設定
   azs = local.azs
 
   public_subnets   = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k)]
@@ -57,6 +59,7 @@ module "vpc" {
   enable_dns_hostnames         = true
   enable_public_redshift       = true # 開放 redshift 子網域對外連線
 
+  # 標籤
   tags = local.tags
 }
 
@@ -68,9 +71,11 @@ module "vpc" {
 module "ssh_key" {
   source = "./modules/ssh-key"
 
+  # 基本設定
   key_name = "${local.name}-ssh-key"
   filename = "./ssh_key.pem"
 
+  # 標籤
   tags = local.tags
 }
 
@@ -90,27 +95,28 @@ module "ec2" {
   key_name = module.ssh_key.key_name
   ssh_cidr = var.connect_cidr
 
+  # 標籤
   tags = local.tags
 }
 
-# 建立 s3 儲存貯體，用於放置 redshift、DMS 資訊
-module "s3_bucket" {
-  source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "~> 3.1"
+# 建立 DMS 實體、端點、任務
+module "dms" {
+  source = "./modules/dms"
 
-  bucket_prefix = "${local.name}-"
+  # 基本設定
+  name                = "${local.name}-dms"
+  repl_instance_class = var.dms_repl_instance_class
 
-  attach_deny_insecure_transport_policy = false
-  server_side_encryption_configuration = {
-    rule = {
-      apply_server_side_encryption_by_default = {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
+  # 網路設定
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.redshift_subnets
 
-  force_destroy = true
+  # 端點設定
+  mysql_secret_arn    = var.dms_mysql_secret_arn
+  redshift_secret_arn = module.redshift.secret_arn
+  redshift_db_name    = var.redshift_database_name
 
+  # 標籤
   tags = local.tags
 }
 
@@ -125,14 +131,22 @@ module "redshift" {
   number_of_nodes = var.redshift_number_of_nodes
 
   # 網路設定
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.redshift_subnets
+  vpc_id       = module.vpc.vpc_id
+  subnet_ids   = module.vpc.redshift_subnets
+
+  # 資料庫連線設定
+  connect_cidr = var.connect_cidr
 
   # 資料庫設定
   database_name   = var.redshift_database_name
   master_username = var.redshift_master_username
   master_password = var.redshift_master_password
 
-  # log 存放設定
-  s3_bucket_id = module.s3_bucket.s3_bucket_id
+  # 標籤
+  tags = local.tags
+
+  # 依賴
+  # depends_on = [
+  #   module.dms, # 因為需要綁定 iam 角色 dms-access-for-endpoint, 所以需要等待 dms 建立完畢
+  # ]
 }
