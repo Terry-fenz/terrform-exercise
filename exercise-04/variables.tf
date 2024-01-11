@@ -57,6 +57,13 @@ variable "redshift_master_password" {
   sensitive   = true # 敏感資訊
 }
 
+# 是否建立 DMS 所需基本 IAM 角色
+variable "dms_create_iam_roles" {
+  description = "Determines whether the required [DMS IAM resources](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Security.html#CHAP_Security.APIRole) will be created"
+  type        = bool
+  default     = false
+}
+
 # DMS 複寫執行個體類別
 variable "dms_repl_instance_class" {
   description = "Replication instance class for DMS"
@@ -69,5 +76,5 @@ variable "dms_mysql_secret_arn" {
   description = "Secret arn for dms mysql source"
   type        = string
   default     = "arn:aws:secretsmanager:ap-southeast-1:380713445581:secret:data-center-mysql-source-example-yZnstp" # test case
-  sensitive   = true # 敏感資訊
+  sensitive   = true                                                                                                # 敏感資訊
 }

@@ -99,25 +99,12 @@ module "ec2" {
   tags = local.tags
 }
 
-# 建立 DMS 實體、端點、任務
-module "dms" {
-  source = "./modules/dms"
+# 建立 DMS 所需角色 (dms-access-for-endpoint、dms-cloudwatch-logs-role、dms-vpc-role)
+module "dms_roles" {
+  source = "./modules/dms-roles"
 
-  # 基本設定
-  name                = "${local.name}-dms"
-  repl_instance_class = var.dms_repl_instance_class
-
-  # 網路設定
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.redshift_subnets
-
-  # 端點設定
-  mysql_secret_arn    = var.dms_mysql_secret_arn
-  redshift_secret_arn = module.redshift.secret_arn
-  redshift_db_name    = var.redshift_database_name
-
-  # 標籤
-  tags = local.tags
+  # 是否建立
+  create_iam_roles = var.dms_create_iam_roles
 }
 
 # 建立 redshift
@@ -146,7 +133,28 @@ module "redshift" {
   tags = local.tags
 
   # 依賴
-  # depends_on = [
-  #   module.dms, # 因為需要綁定 iam 角色 dms-access-for-endpoint, 所以需要等待 dms 建立完畢
-  # ]
+  depends_on = [
+    module.dms_roles, # 需要綁定 iam 角色 dms-access-for-endpoint
+  ]
+}
+
+# 建立 DMS 實體、端點、任務
+module "dms" {
+  source = "./modules/dms"
+
+  # 基本設定
+  name                = "${local.name}-dms"
+  repl_instance_class = var.dms_repl_instance_class
+
+  # 網路設定
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.redshift_subnets
+
+  # 端點設定
+  mysql_secret_arn    = var.dms_mysql_secret_arn
+  redshift_secret_arn = module.redshift.secret_arn
+  redshift_db_name    = var.redshift_database_name
+
+  # 標籤
+  tags = local.tags
 }
