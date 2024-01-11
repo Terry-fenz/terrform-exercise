@@ -1,0 +1,82 @@
+{
+    "rules": [
+        {
+            "rule-type": "transformation",
+            "rule-id": "442569936",
+            "rule-name": "442569936",
+            "rule-target": "column",
+            "object-locator": {
+                "schema-name": "%",
+                "table-name": "%"
+            },
+            "rule-action": "add-column",
+            "value": "operation",
+            "expression": "operation_indicator('D', 'U', 'I')",
+            "data-type": {
+                "type": "string",
+                "length": 50
+            }
+        },
+        {
+            "rule-type": "transformation",
+            "rule-id": "442569935",
+            "rule-name": "442569935",
+            "rule-target": "column",
+            "object-locator": {
+                "schema-name": "%",
+                "table-name": "%"
+            },
+            "rule-action": "add-column",
+            "value": "sync_time",
+            "old-value": null,
+            "expression": "datetime('now')",
+            "data-type": {
+                "type": "datetime"
+            }
+        },
+        {
+            "rule-type": "selection",
+            "rule-id": "442569934",
+            "rule-name": "442569934",
+            "object-locator": {
+                "schema-name": "pp",
+                "table-name": "%"
+            },
+            "rule-action": "include",
+            "filters": []
+        },
+        {
+            "rule-type": "selection",
+            "rule-id": "442569933",
+            "rule-name": "442569933",
+            "object-locator": {
+                "schema-name": "pp_logs",
+                "table-name": "%"
+            },
+            "rule-action": "include",
+            "filters": []
+        },
+        {
+            "rule-type": "selection",
+            "rule-id": "442569932",
+            "rule-name": "442569932",
+            "object-locator": {
+                "schema-name": "live3_logs",
+                "table-name": "%"
+            },
+            "rule-action": "include",
+            "filters": []
+        },
+        {
+            "rule-type": "selection",
+            "rule-id": "442569931",
+            "rule-name": "442569931",
+            "object-locator": {
+                "schema-name": "live3_svr_api",
+                "table-name": "%"
+            },
+            "rule-action": "include",
+            "filters": []
+        }
+    ]
+}
