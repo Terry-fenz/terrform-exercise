@@ -1,3 +1,13 @@
+locals {
+  dms_instance_name = "${var.name}-replication"
+}
+
+# 建立 cloudwatch log group
+resource "aws_cloudwatch_log_group" "dms_task_log_group" {
+  name              = "dms-tasks-${local.dms_instance_name}" # Fix name for task
+  retention_in_days = 60
+}
+
 # 建立 s3 bucket
 module "dms_s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
@@ -107,7 +117,7 @@ module "database_migration_service" {
 
   # Instance
   # This value is used when subscribing to instance event notifications
-  repl_instance_id                          = "${var.name}-replication"
+  repl_instance_id                          = local.dms_instance_name
   repl_instance_allocated_storage           = 64
   repl_instance_auto_minor_version_upgrade  = true
   repl_instance_allow_major_version_upgrade = true
@@ -133,11 +143,11 @@ module "database_migration_service" {
   # Endpoints
   endpoints = {
     mysql-source = {
-      endpoint_type               = "source"
-      endpoint_id                 = "${var.name}-source-live-pp"
-      engine_name                 = "mysql"
-      secrets_manager_arn         = var.mysql_secret_arn
-      ssl_mode                    = "none"
+      endpoint_type       = "source"
+      endpoint_id         = "${var.name}-source-live-pp"
+      engine_name         = "mysql"
+      secrets_manager_arn = var.mysql_secret_arn
+      ssl_mode            = "none"
 
       tags = { EndpointType = "mysql-source" }
     }
@@ -172,24 +182,24 @@ module "database_migration_service" {
     }
   }
 
-#   event_subscriptions = {
-#     instance = {
-#       name                             = "instance-events"
-#       enabled                          = true
-#       instance_event_subscription_keys = [local.replication_instance_id]
-#       source_type                      = "replication-instance"
-#       sns_topic_arn                    = "arn:aws:sns:us-east-1:012345678910:example-topic"
-#       event_categories                 = local.replication_instance_event_categories
-#     }
-#     task = {
-#       name                         = "task-events"
-#       enabled                      = true
-#       task_event_subscription_keys = ["mysql_redshift"]
-#       source_type                  = "replication-task"
-#       sns_topic_arn                = "arn:aws:sns:us-east-1:012345678910:example-topic"
-#       event_categories             = local.replication_task_event_categories
-#     }
-#   }
+  #   event_subscriptions = {
+  #     instance = {
+  #       name                             = "instance-events"
+  #       enabled                          = true
+  #       instance_event_subscription_keys = [local.replication_instance_id]
+  #       source_type                      = "replication-instance"
+  #       sns_topic_arn                    = "arn:aws:sns:us-east-1:012345678910:example-topic"
+  #       event_categories                 = local.replication_instance_event_categories
+  #     }
+  #     task = {
+  #       name                         = "task-events"
+  #       enabled                      = true
+  #       task_event_subscription_keys = ["mysql_redshift"]
+  #       source_type                  = "replication-task"
+  #       sns_topic_arn                = "arn:aws:sns:us-east-1:012345678910:example-topic"
+  #       event_categories             = local.replication_task_event_categories
+  #     }
+  #   }
 
   # Timeout
   repl_instance_timeouts = {
@@ -199,4 +209,9 @@ module "database_migration_service" {
   }
 
   tags = var.tags
+
+  # 依賴
+  depends_on = [ 
+    aws_cloudwatch_log_group.dms_task_log_group # 日誌群組
+  ]
 }
