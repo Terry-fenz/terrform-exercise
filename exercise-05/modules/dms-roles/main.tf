@@ -19,8 +19,11 @@ data "aws_iam_policy_document" "dms_assume_role" {
     ]
 
     principals {
-      identifiers = ["dms.${local.dns_suffix}", "dms.amazonaws.com"]
-      type        = "Service"
+      type = "Service"
+      identifiers = [
+        "dms.${local.dns_suffix}",
+        "dms.amazonaws.com",
+      ]
     }
   }
 }
@@ -37,8 +40,11 @@ data "aws_iam_policy_document" "dms_assume_role_redshift" {
     ]
 
     principals {
-      identifiers = ["redshift.${local.dns_suffix}", "redshift.amazonaws.com"]
-      type        = "Service"
+      type = "Service"
+      identifiers = [
+        "redshift.${local.dns_suffix}",
+        "redshift.amazonaws.com",
+      ]
     }
   }
 }

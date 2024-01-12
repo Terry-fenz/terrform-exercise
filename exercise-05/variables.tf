@@ -78,3 +78,10 @@ variable "dms_mysql_secret_arn" {
   default     = "arn:aws:secretsmanager:ap-southeast-1:380713445581:secret:data-center-mysql-source-example-yZnstp" # test case
   sensitive   = true                                                                                                # 敏感資訊
 }
+
+# 告警、通知的郵件對象
+variable "notification_mails" {
+  description = "Notification target by email"
+  type        = list(string)
+  default     = ["terry-tw@fenz.vip"]
+}

@@ -118,8 +118,8 @@ module "redshift" {
   number_of_nodes = var.redshift_number_of_nodes
 
   # 網路設定
-  vpc_id       = module.vpc.vpc_id
-  subnet_ids   = module.vpc.redshift_subnets
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.redshift_subnets
 
   # 資料庫連線設定
   connect_cidr = var.connect_cidr
@@ -138,6 +138,18 @@ module "redshift" {
   ]
 }
 
+# 建立告警、通知機制
+module "notification" {
+  source = "./modules/notification"
+
+  # 基本設定
+  name                   = local.name
+  subscription_endpoints = var.notification_mails
+
+  # 標籤
+  tags = local.tags
+}
+
 # 建立 DMS 實體、端點、任務
 module "dms" {
   source = "./modules/dms"
@@ -154,6 +166,9 @@ module "dms" {
   mysql_secret_arn    = var.dms_mysql_secret_arn
   redshift_secret_arn = module.redshift.secret_arn
   redshift_db_name    = var.redshift_database_name
+
+  # 通知設定
+  sns_topic_arn = module.notification.arn
 
   # 標籤
   tags = local.tags

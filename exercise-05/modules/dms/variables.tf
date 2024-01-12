@@ -40,6 +40,12 @@ variable "redshift_db_name" {
   type        = string
 }
 
+# 通知事件的 sns topic
+variable "sns_topic_arn" {
+  description = "SNS topic for notification"
+  type        = string
+}
+
 # DMS tags
 variable "tags" {
   description = "DMS tags"
