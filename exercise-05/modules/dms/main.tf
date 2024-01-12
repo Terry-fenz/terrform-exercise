@@ -8,8 +8,10 @@ locals {
 
 # 建立 cloudwatch log group
 resource "aws_cloudwatch_log_group" "dms_task_log_group" {
-  name              = "dms-tasks-${local.dms_instance_id}" # Fix name for task
+  name              = "dms-tasks-${local.dms_instance_id}" # Fixed name for task
   retention_in_days = 60
+
+  tags = var.tags
 }
 
 # 建立 s3 bucket
