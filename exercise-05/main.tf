@@ -155,7 +155,7 @@ module "dms" {
   source = "./modules/dms"
 
   # 基本設定
-  name                = "${local.name}-dms"
+  name                = local.name
   repl_instance_class = var.dms_repl_instance_class
 
   # 網路設定

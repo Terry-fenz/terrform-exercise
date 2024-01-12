@@ -1,5 +1,5 @@
 locals {
-  dms_instance_id = "${var.name}-replication"
+  dms_instance_id = "${var.name}-dms-replication"
 
   # 通知事件類別
   replication_instance_event_categories = ["failure", "creation", "deletion", "maintenance", "failover", "low storage", "configuration change"]
@@ -78,8 +78,8 @@ resource "aws_s3_bucket_policy" "dms_s3_bucket_dms_policy" {
 
 # 建立 DMS 專用安全群組
 resource "aws_security_group" "dms" {
-  description = "default security group for ${var.name}"
-  name        = var.name
+  description = "default security group for ${var.name}-dms"
+  name        = "${var.name}-dms"
   vpc_id      = var.vpc_id
 
   # 標籤
@@ -117,8 +117,8 @@ module "database_migration_service" {
   version = "~> 2.0"
 
   # Subnet group
-  repl_subnet_group_name        = var.name
-  repl_subnet_group_description = "DMS subnet group for ${var.name}"
+  repl_subnet_group_name        = "${var.name}-dms"
+  repl_subnet_group_description = "DMS subnet group for ${var.name}-dms"
   repl_subnet_group_subnet_ids  = var.subnet_ids
 
   # Instance

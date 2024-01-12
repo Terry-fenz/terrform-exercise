@@ -197,7 +197,7 @@ module "redshift_secrets_manager" {
   source  = "terraform-aws-modules/secrets-manager/aws"
   version = "~> 1.0"
 
-  name_prefix = "${var.name}-redshift-"
+  name_prefix = "${var.name}-"
   description = "Redshift secret for ${var.name}"
 
   # Secret
