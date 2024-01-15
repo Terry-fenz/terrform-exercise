@@ -83,5 +83,5 @@ variable "dms_mysql_secret_arn" {
 variable "notification_mails" {
   description = "Notification target by email"
   type        = list(string)
-  default     = ["terry-tw@fenz.vip"]
+  default     = ["terry-tw@fenz.vip"] # 敏感資訊
 }

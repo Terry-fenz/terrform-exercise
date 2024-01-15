@@ -1,5 +1,5 @@
 # 取得 dms 連接使用 iam 角色 (此角色由 dms 建立)
-data "aws_iam_role" "dms-access-for-endpoint" {
+data "aws_iam_role" "dms_access_for_endpoint" {
   name = "dms-access-for-endpoint"
 }
 
@@ -25,7 +25,7 @@ module "redshift_log_s3_bucket" {
 }
 
 # 建立 iam policy，使 redshift 有權讀寫 s3
-data "aws_iam_policy_document" "redshift-access-bucket-assume-policy" {
+data "aws_iam_policy_document" "redshift_access_bucket_assume_policy" {
   statement {
     effect = "Allow"
     principals {
@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "redshift-access-bucket-assume-policy" {
 # 綁定 s3 儲存貯體與 iam policy
 resource "aws_s3_bucket_policy" "dms_s3_bucket_redshift_log_policy" {
   bucket = module.redshift_log_s3_bucket.s3_bucket_id
-  policy = data.aws_iam_policy_document.redshift-access-bucket-assume-policy.json
+  policy = data.aws_iam_policy_document.redshift_access_bucket_assume_policy.json
 }
 
 # 建立 redshift 專用安全群組
@@ -103,7 +103,7 @@ module "redshift" {
 
   # 關聯角色綁定
   iam_role_arns = [
-    data.aws_iam_role.dms-access-for-endpoint.arn,
+    data.aws_iam_role.dms_access_for_endpoint.arn,
   ]
 
   # 網路與安全性設定

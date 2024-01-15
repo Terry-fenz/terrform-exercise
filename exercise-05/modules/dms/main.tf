@@ -1,9 +1,17 @@
+data "aws_region" "current" {}
+
 locals {
+  region          = data.aws_region.current.name
   dms_instance_id = "${var.name}-dms-replication"
 
   # 通知事件類別
   replication_instance_event_categories = ["failure", "creation", "deletion", "maintenance", "failover", "low storage", "configuration change"]
   replication_task_event_categories     = ["failure", "state change", "creation", "deletion", "configuration change"]
+}
+
+# 取得 lambd function 資訊
+data "aws_lambda_function" "dms_log_to_sns" {
+  function_name = var.lambda_function_name
 }
 
 # 建立 cloudwatch log group
@@ -12,6 +20,25 @@ resource "aws_cloudwatch_log_group" "dms_task_log_group" {
   retention_in_days = 60
 
   tags = var.tags
+}
+
+# 建立 cloudwatch 推送 lambda 權限
+resource "aws_lambda_permission" "allow_cloudwatch" {
+  statement_id  = "lambda-allow-cloudwatch"
+  action        = "lambda:InvokeFunction"
+  function_name = var.lambda_function_name
+  principal     = "logs.${local.region}.amazonaws.com"
+  source_arn    = "${aws_cloudwatch_log_group.dms_task_log_group.arn}:*"
+}
+
+# 建立 cloudwatch log 訂閱
+resource "aws_cloudwatch_log_subscription_filter" "lambda_function_log_filter" {
+  name            = "${var.name}-errors-to-sns"
+  log_group_name  = aws_cloudwatch_log_group.dms_task_log_group.name
+  filter_pattern  = "\"]E:\""
+  destination_arn = data.aws_lambda_function.dms_log_to_sns.arn
+
+  depends_on = [aws_lambda_permission.allow_cloudwatch]
 }
 
 # 建立 s3 bucket
@@ -37,7 +64,7 @@ module "dms_s3_bucket" {
 }
 
 # 建立 iam policy，使 dms 有權讀寫 s3
-data "aws_iam_policy_document" "dms-access-bucket-assume-policy" {
+data "aws_iam_policy_document" "dms_access_bucket_assume_policy" {
   statement {
     effect = "Allow"
     principals {
@@ -75,7 +102,7 @@ data "aws_iam_policy_document" "dms-access-bucket-assume-policy" {
 # 綁定 s3 儲存貯體與 iam policy
 resource "aws_s3_bucket_policy" "dms_s3_bucket_dms_policy" {
   bucket = module.dms_s3_bucket.s3_bucket_id
-  policy = data.aws_iam_policy_document.dms-access-bucket-assume-policy.json
+  policy = data.aws_iam_policy_document.dms_access_bucket_assume_policy.json
 }
 
 # 建立 DMS 專用安全群組

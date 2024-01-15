@@ -46,6 +46,12 @@ variable "sns_topic_arn" {
   type        = string
 }
 
+# Lambda function 的名稱
+variable "lambda_function_name" {
+  description = "Lambda function name for send notification"
+  type        = string
+}
+
 # DMS tags
 variable "tags" {
   description = "DMS tags"

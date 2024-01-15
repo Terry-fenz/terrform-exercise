@@ -168,8 +168,15 @@ module "dms" {
   redshift_db_name    = var.redshift_database_name
 
   # 通知設定
-  sns_topic_arn = module.notification.arn
+  sns_topic_arn        = module.notification.sns_topic_arn
+  lambda_function_name = module.notification.lambda_function_name
 
   # 標籤
   tags = local.tags
+
+  # 依賴
+  depends_on = [
+    module.redshift,     # 需要綁定 redshift
+    module.notification, # 需要綁定 lambda_function
+  ]
 }
