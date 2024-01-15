@@ -206,7 +206,7 @@ module "redshift_secrets_manager" {
   recovery_window_in_days = 0
   secret_string = jsonencode(
     {
-      host     = module.redshift.cluster_endpoint
+      host     = module.redshift.endpoint_access_address
       port     = 5439
       username = var.master_username
       password = var.master_password
