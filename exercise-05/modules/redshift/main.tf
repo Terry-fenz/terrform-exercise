@@ -97,7 +97,7 @@ module "redshift" {
   database_name          = var.database_name
   master_username        = var.master_username
   create_random_password = false
-  manage_master_password = true
+  manage_master_password = false
   master_password        = var.master_password
 
   # 加密設定
