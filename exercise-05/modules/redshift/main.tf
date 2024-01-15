@@ -84,7 +84,8 @@ resource "aws_security_group" "redshift" {
 
 # 建立 redshift 
 module "redshift" {
-  source = "terraform-aws-modules/redshift/aws"
+  source  = "terraform-aws-modules/redshift/aws"
+  version = "~> 5.1.0"
 
   # 基本設定
   cluster_identifier    = var.name
@@ -96,6 +97,7 @@ module "redshift" {
   database_name          = var.database_name
   master_username        = var.master_username
   create_random_password = false
+  manage_master_password = true
   master_password        = var.master_password
 
   # 加密設定
@@ -116,8 +118,8 @@ module "redshift" {
 
   # log 設定
   logging = {
-    enable        = true
-    bucket_name   = module.redshift_log_s3_bucket.s3_bucket_id
+    enable      = true
+    bucket_name = module.redshift_log_s3_bucket.s3_bucket_id
   }
 
   # Parameter group
